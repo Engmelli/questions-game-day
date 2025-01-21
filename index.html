@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programming Language Quiz</title>
+    <title>Programming Quiz</title>
+    <link rel="shortcut icon" type="image/x-icon" href="logo.jpg" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -234,12 +235,13 @@
         let currentQuestionIndex = 0;
         let score = 0;
         let answeredQuestions = new Set();
-
+        let filteredQuestions = [];
+        
         async function loadQuizData() {
             try {
                 const response = await fetch('questions.json');
                 quizData = await response.json();
-                document.getElementById('total-questions').textContent = quizData.questions.length;
+                filterQuestionsByDifficulty();
                 displayCurrentQuestion();
             } catch (error) {
                 console.error('Error loading questions:', error);
@@ -247,7 +249,13 @@
                     '<p style="color: #f44336; text-align: center;">Error loading questions. Please try again later.</p>';
             }
         }
-
+        
+        function filterQuestionsByDifficulty() {
+            filteredQuestions = quizData.questions.filter(question => question.difficulty === currentDifficulty);
+            currentQuestionIndex = 0;
+            document.getElementById('total-questions').textContent = filteredQuestions.length;
+        }
+        
         function changeLanguage(language) {
             currentLanguage = language;
             document.querySelectorAll('.language-btn').forEach(btn => {
@@ -256,16 +264,19 @@
             document.querySelector(`[onclick="changeLanguage('${language}')"]`).classList.add('active');
             displayCurrentQuestion();
         }
-
+        
         function displayCurrentQuestion() {
-            const question = quizData.questions[currentQuestionIndex];
-            if (!question) return;
-
+            const question = filteredQuestions[currentQuestionIndex];
+            if (!question) {
+                document.getElementById('question-container').innerHTML = '<p style="color: #ccc; text-align: center;">No questions available for this difficulty level.</p>';
+                return;
+            }
+        
             const variant = question.variants[currentLanguage];
             const container = document.getElementById('question-container');
             
             container.innerHTML = `
-                <h2>${question.title}</h2>
+                <h2>Difficulty ${currentDifficulty}: ${question.title}</h2>
                 <div class="code-block">
                     <div class="language-indicator">${currentLanguage.toUpperCase()}</div>
                     <pre>${variant.code}</pre>
@@ -281,11 +292,11 @@
                     <div class="explanation">${variant.explanation}</div>
                 </div>
             `;
-
+        
             updateNavigation();
             document.getElementById('current-question').textContent = currentQuestionIndex + 1;
         }
-
+        
         function checkAnswer(index, correct) {
             const buttons = document.querySelectorAll('.choice-btn');
             const resultDiv = document.querySelector('.result');
@@ -293,7 +304,7 @@
             
             buttons.forEach(btn => btn.disabled = true);
             answeredQuestions.add(currentQuestionIndex);
-
+        
             if (correct) {
                 buttons[index].classList.add('correct');
                 resultDiv.innerHTML = "✅ Correct!";
@@ -304,38 +315,38 @@
                 resultDiv.innerHTML = "❌ Incorrect";
                 if (currentDifficulty > 1) currentDifficulty--;
             }
-
+        
             document.getElementById('difficulty-level').textContent = currentDifficulty;
             document.getElementById('score').textContent = score;
             explanationDiv.style.display = 'block';
+            filterQuestionsByDifficulty();
             updateNavigation();
         }
-
+        
         function updateNavigation() {
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             
             prevBtn.disabled = currentQuestionIndex === 0;
-            nextBtn.disabled = currentQuestionIndex === quizData.questions.length - 1 || 
+            nextBtn.disabled = currentQuestionIndex === filteredQuestions.length - 1 || 
                               !answeredQuestions.has(currentQuestionIndex);
         }
-
+        
         function previousQuestion() {
             if (currentQuestionIndex > 0) {
                 currentQuestionIndex--;
                 displayCurrentQuestion();
             }
         }
-
+        
         function nextQuestion() {
-            if (currentQuestionIndex < quizData.questions.length - 1 && 
+            if (currentQuestionIndex < filteredQuestions.length - 1 && 
                 answeredQuestions.has(currentQuestionIndex)) {
                 currentQuestionIndex++;
                 displayCurrentQuestion();
             }
         }
-
-        // Initialize the quiz
+        
         loadQuizData();
     </script>
 </body>
