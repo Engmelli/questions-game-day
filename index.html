@@ -217,6 +217,7 @@
         let currentDifficulty = 1;
         let lives = 3;
         let answeredQuestions = new Set();
+        let currentQuestion = null;
         let difficultyFiveCorrect = false;
 
         async function loadQuizData() {
@@ -243,22 +244,27 @@
             currentLanguage = language;
             document.querySelectorAll('.language-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`[onclick="changeLanguage('${language}')"]`).classList.add('active');
-            displayNextQuestion();
+            displayCurrentQuestion();
         }
 
         function displayNextQuestion() {
-            const question = getRandomQuestion();
-            if (!question) {
+            currentQuestion = getRandomQuestion();
+            if (!currentQuestion) {
                 checkGameOverOrWin();
                 return;
             }
-            answeredQuestions.add(question.id);
+            answeredQuestions.add(currentQuestion.id);
+            displayCurrentQuestion();
+        }
 
-            const variant = question.variants[currentLanguage];
+        function displayCurrentQuestion() {
+            if (!currentQuestion) return;
+
+            const variant = currentQuestion.variants[currentLanguage];
             const container = document.getElementById('question-container');
 
             container.innerHTML = `
-                <h2>Difficulty ${currentDifficulty}: ${question.title}</h2>
+                <h2>Difficulty ${currentDifficulty}: ${currentQuestion.title}</h2>
                 <div class="code-block">
                     <div class="language-indicator">${currentLanguage.toUpperCase()}</div>
                     <pre>${variant.code}</pre>
@@ -326,6 +332,7 @@
             currentDifficulty = 1;
             answeredQuestions.clear();
             difficultyFiveCorrect = false;
+            currentQuestion = null;
             document.getElementById('difficulty-level').textContent = currentDifficulty;
             document.getElementById('lives').textContent = lives;
             displayNextQuestion();
