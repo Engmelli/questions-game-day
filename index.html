@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Language Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e, #0d0d0d);
+            color: #ccc;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(45, 45, 45, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .language-selector {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .language-btn {
+            background-color: #a748eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        .language-btn:hover {
+            background-color: #8d3bce;
+        }
+
+        .language-btn.active {
+            background-color: #8d3bce;
+            box-shadow: 0 0 10px rgba(167, 72, 235, 0.5);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            color: #ebd037;
+            font-weight: bold;
+        }
+
+        .code-block {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .language-indicator {
+            font-weight: bold;
+            color: #a748eb;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        pre {
+            background-color: #1e1e1e;
+            color: #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 16px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            background-color: #a748eb;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .choice-btn:hover {
+            background-color: #8d3bce;
+            transform: translateY(-2px);
+        }
+
+        .choice-btn.correct {
+            background-color: #4caf50;
+        }
+
+        .choice-btn.incorrect {
+            background-color: #f44336;
+        }
+
+        .result {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 27px;
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            display: none;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background-color: #a748eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        .nav-btn:hover {
+            background-color: #8d3bce;
+        }
+
+        .nav-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Programming Language Quiz</h1>
+        </div>
+
+        <div class="language-selector">
+            <button class="language-btn active" onclick="changeLanguage('java')">Java</button>
+            <button class="language-btn" onclick="changeLanguage('python')">Python</button>
+            <button class="language-btn" onclick="changeLanguage('javascript')">JavaScript</button>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-label">Difficulty</div>
+                <div class="stat-value" id="difficulty-level">1</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Question</div>
+                <div class="stat-value"><span id="current-question">1</span>/<span id="total-questions">0</span></div>
+            </div>
+        </div>
+
+        <div id="question-container" class="fade-in">
+            <!-- Question content will be inserted here -->
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" onclick="previousQuestion()" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+    </div>
+
+    <script>
+        let quizData;
+        let currentLanguage = 'java';
+        let currentDifficulty = 1;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answeredQuestions = new Set();
+
+        async function loadQuizData() {
+            try {
+                const response = await fetch('questions.json');
+                quizData = await response.json();
+                document.getElementById('total-questions').textContent = quizData.questions.length;
+                displayCurrentQuestion();
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                document.getElementById('question-container').innerHTML = 
+                    '<p style="color: #f44336; text-align: center;">Error loading questions. Please try again later.</p>';
+            }
+        }
+
+        function changeLanguage(language) {
+            currentLanguage = language;
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="changeLanguage('${language}')"]`).classList.add('active');
+            displayCurrentQuestion();
+        }
+
+        function displayCurrentQuestion() {
+            const question = quizData.questions[currentQuestionIndex];
+            if (!question) return;
+
+            const variant = question.variants[currentLanguage];
+            const container = document.getElementById('question-container');
+            
+            container.innerHTML = `
+                <h2>${question.title}</h2>
+                <div class="code-block">
+                    <div class="language-indicator">${currentLanguage.toUpperCase()}</div>
+                    <pre>${variant.code}</pre>
+                    <div class="choices">
+                        ${variant.answers.map((answer, index) => `
+                            <button class="choice-btn" onclick="checkAnswer(${index}, ${answer.correct})"
+                                ${answeredQuestions.has(currentQuestionIndex) ? 'disabled' : ''}>
+                                ${answer.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="result"></div>
+                    <div class="explanation">${variant.explanation}</div>
+                </div>
+            `;
+
+            updateNavigation();
+            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+        }
+
+        function checkAnswer(index, correct) {
+            const buttons = document.querySelectorAll('.choice-btn');
+            const resultDiv = document.querySelector('.result');
+            const explanationDiv = document.querySelector('.explanation');
+            
+            buttons.forEach(btn => btn.disabled = true);
+            answeredQuestions.add(currentQuestionIndex);
+
+            if (correct) {
+                buttons[index].classList.add('correct');
+                resultDiv.innerHTML = "✅ Correct!";
+                score++;
+                if (currentDifficulty < 3) currentDifficulty++;
+            } else {
+                buttons[index].classList.add('incorrect');
+                resultDiv.innerHTML = "❌ Incorrect";
+                if (currentDifficulty > 1) currentDifficulty--;
+            }
+
+            document.getElementById('difficulty-level').textContent = currentDifficulty;
+            document.getElementById('score').textContent = score;
+            explanationDiv.style.display = 'block';
+            updateNavigation();
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === quizData.questions.length - 1 || 
+                              !answeredQuestions.has(currentQuestionIndex);
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayCurrentQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizData.questions.length - 1 && 
+                answeredQuestions.has(currentQuestionIndex)) {
+                currentQuestionIndex++;
+                displayCurrentQuestion();
+            }
+        }
+
+        // Initialize the quiz
+        loadQuizData();
+    </script>
+</body>
+</html>

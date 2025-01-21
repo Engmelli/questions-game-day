@@ -1,0 +1,78 @@
+{
+    "questions": [
+      {
+        "id": 1,
+        "title": "String Manipulation",
+        "difficulty": 1,
+        "variants": {
+          "java": {
+            "code": "String str = \"Hello World!\";\nSystem.out.println(str.charAt(6) + str.substring(0, 5));",
+            "answers": [
+              {"text": "WHello", "correct": true},
+              {"text": "HelloW", "correct": false},
+              {"text": "WorldHello", "correct": false},
+              {"text": "error", "correct": false}
+            ],
+            "explanation": "charAt(6) gets 'W' and substring(0,5) gets 'Hello', concatenating them gives 'WHello'"
+          },
+          "python": {
+            "code": "a = [1, 2, 3]\nprint(a * 2)",
+            "answers": [
+              {"text": "[1, 2, 3, 1, 2, 3]", "correct": true},
+              {"text": "[2, 4, 6]", "correct": false},
+              {"text": "6", "correct": false},
+              {"text": "error", "correct": false}
+            ],
+            "explanation": "In Python, multiplying a list by 2 repeats the list elements twice"
+          },
+          "javascript": {
+            "code": "let str = \"hello\";\nlet reversed = str.split('').reverse().join('');\nconsole.log(reversed);",
+            "answers": [
+              {"text": "olleh", "correct": true},
+              {"text": "hello", "correct": false},
+              {"text": "ehllo", "correct": false},
+              {"text": "error", "correct": false}
+            ],
+            "explanation": "split('') creates array of chars, reverse() reverses it, join('') creates string"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Conditional Operations",
+        "difficulty": 2,
+        "variants": {
+          "java": {
+            "code": "int x = 5;\nint y = 10;\nSystem.out.println(x * 2 > y ? x - y : x + y);",
+            "answers": [
+              {"text": "15", "correct": true},
+              {"text": "5", "correct": false},
+              {"text": "-5", "correct": false},
+              {"text": "10", "correct": false}
+            ],
+            "explanation": "5 * 2 = 10, which is not greater than 10, so x + y = 15 is printed"
+          },
+          "python": {
+            "code": "x = 5\ny = 10\nprint(x + y if x > y else x - y)",
+            "answers": [
+              {"text": "-5", "correct": true},
+              {"text": "15", "correct": false},
+              {"text": "5", "correct": false},
+              {"text": "10", "correct": false}
+            ],
+            "explanation": "Since x is not greater than y, x - y = -5 is printed"
+          },
+          "javascript": {
+            "code": "let x = 5;\nlet y = 10;\nconsole.log(x > y ? x + y : x - y);",
+            "answers": [
+              {"text": "-5", "correct": true},
+              {"text": "15", "correct": false},
+              {"text": "5", "correct": false},
+              {"text": "10", "correct": false}
+            ],
+            "explanation": "Since x is not greater than y, x - y = -5 is printed"
+          }
+        }
+      }
+    ]
+  }
