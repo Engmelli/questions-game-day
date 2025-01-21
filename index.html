@@ -155,32 +155,6 @@
             display: none;
         }
 
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .nav-btn {
-            background-color: #a748eb;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-size: 16px;
-        }
-
-        .nav-btn:hover {
-            background-color: #8d3bce;
-        }
-
-        .nav-btn:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -188,6 +162,24 @@
 
         .fade-in {
             animation: fadeIn 0.5s ease-in;
+        }
+
+        .game-over, .win-screen {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 24px;
+            color: #ebd037;
+        }
+
+        .restart-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -209,22 +201,13 @@
                 <div class="stat-value" id="difficulty-level">1</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Score</div>
-                <div class="stat-value" id="score">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Question</div>
-                <div class="stat-value"><span id="current-question">1</span>/<span id="total-questions">0</span></div>
+                <div class="stat-label">Lives</div>
+                <div class="stat-value" id="lives">3</div>
             </div>
         </div>
 
         <div id="question-container" class="fade-in">
             <!-- Question content will be inserted here -->
-        </div>
-
-        <div class="navigation">
-            <button class="nav-btn" id="prev-btn" onclick="previousQuestion()" disabled>Previous</button>
-            <button class="nav-btn" id="next-btn" onclick="nextQuestion()" disabled>Next</button>
         </div>
     </div>
 
@@ -232,49 +215,48 @@
         let quizData;
         let currentLanguage = 'java';
         let currentDifficulty = 1;
-        let currentQuestionIndex = 0;
-        let score = 0;
+        let lives = 3;
         let answeredQuestions = new Set();
-        let filteredQuestions = [];
-        
+        let difficultyFiveCorrect = false;
+
         async function loadQuizData() {
             try {
                 const response = await fetch('questions.json');
                 quizData = await response.json();
-                filterQuestionsByDifficulty();
-                displayCurrentQuestion();
+                displayNextQuestion();
             } catch (error) {
                 console.error('Error loading questions:', error);
                 document.getElementById('question-container').innerHTML = 
                     '<p style="color: #f44336; text-align: center;">Error loading questions. Please try again later.</p>';
             }
         }
-        
-        function filterQuestionsByDifficulty() {
-            filteredQuestions = quizData.questions.filter(question => question.difficulty === currentDifficulty);
-            currentQuestionIndex = 0;
-            document.getElementById('total-questions').textContent = filteredQuestions.length;
+
+        function getRandomQuestion() {
+            const filteredQuestions = quizData.questions.filter(
+                q => q.difficulty === currentDifficulty && !answeredQuestions.has(q.id)
+            );
+            if (filteredQuestions.length === 0) return null;
+            return filteredQuestions[Math.floor(Math.random() * filteredQuestions.length)];
         }
-        
+
         function changeLanguage(language) {
             currentLanguage = language;
-            document.querySelectorAll('.language-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.language-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`[onclick="changeLanguage('${language}')"]`).classList.add('active');
-            displayCurrentQuestion();
+            displayNextQuestion();
         }
-        
-        function displayCurrentQuestion() {
-            const question = filteredQuestions[currentQuestionIndex];
+
+        function displayNextQuestion() {
+            const question = getRandomQuestion();
             if (!question) {
-                document.getElementById('question-container').innerHTML = '<p style="color: #ccc; text-align: center;">No questions available for this difficulty level.</p>';
+                checkGameOverOrWin();
                 return;
             }
-        
+            answeredQuestions.add(question.id);
+
             const variant = question.variants[currentLanguage];
             const container = document.getElementById('question-container');
-            
+
             container.innerHTML = `
                 <h2>Difficulty ${currentDifficulty}: ${question.title}</h2>
                 <div class="code-block">
@@ -282,8 +264,7 @@
                     <pre>${variant.code}</pre>
                     <div class="choices">
                         ${variant.answers.map((answer, index) => `
-                            <button class="choice-btn" onclick="checkAnswer(${index}, ${answer.correct})"
-                                ${answeredQuestions.has(currentQuestionIndex) ? 'disabled' : ''}>
+                            <button class="choice-btn" onclick="checkAnswer(${index}, ${answer.correct})">
                                 ${answer.text}
                             </button>
                         `).join('')}
@@ -292,61 +273,64 @@
                     <div class="explanation">${variant.explanation}</div>
                 </div>
             `;
-        
-            updateNavigation();
-            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
         }
-        
+
         function checkAnswer(index, correct) {
             const buttons = document.querySelectorAll('.choice-btn');
             const resultDiv = document.querySelector('.result');
-            const explanationDiv = document.querySelector('.explanation');
-            
+
             buttons.forEach(btn => btn.disabled = true);
-            answeredQuestions.add(currentQuestionIndex);
-        
+
             if (correct) {
                 buttons[index].classList.add('correct');
-                resultDiv.innerHTML = "✅ Correct!";
-                score++;
-                if (currentDifficulty < 3) currentDifficulty++;
+                resultDiv.textContent = '✅ Correct!';
+                if (currentDifficulty === 5) {
+                    difficultyFiveCorrect = true;
+                }
+                if (currentDifficulty < 5) currentDifficulty++;
             } else {
                 buttons[index].classList.add('incorrect');
-                resultDiv.innerHTML = "❌ Incorrect";
+                resultDiv.textContent = '❌ Incorrect';
+                lives--;
+                document.getElementById('lives').textContent = lives;
                 if (currentDifficulty > 1) currentDifficulty--;
             }
-        
+
             document.getElementById('difficulty-level').textContent = currentDifficulty;
-            document.getElementById('score').textContent = score;
-            explanationDiv.style.display = 'block';
-            filterQuestionsByDifficulty();
-            updateNavigation();
+            setTimeout(() => checkGameOverOrWin() || displayNextQuestion(), 2000);
         }
-        
-        function updateNavigation() {
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            
-            prevBtn.disabled = currentQuestionIndex === 0;
-            nextBtn.disabled = currentQuestionIndex === filteredQuestions.length - 1 || 
-                              !answeredQuestions.has(currentQuestionIndex);
-        }
-        
-        function previousQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                displayCurrentQuestion();
+
+        function checkGameOverOrWin() {
+            const container = document.getElementById('question-container');
+            if (lives === 0) {
+                container.innerHTML = `
+                    <div class="game-over">Game Over! 😢</div>
+                    <button class="restart-btn" onclick="restartGame()">Restart</button>
+                `;
+                return true;
             }
-        }
-        
-        function nextQuestion() {
-            if (currentQuestionIndex < filteredQuestions.length - 1 && 
-                answeredQuestions.has(currentQuestionIndex)) {
-                currentQuestionIndex++;
-                displayCurrentQuestion();
+
+            if (currentDifficulty === 5 && difficultyFiveCorrect) {
+                container.innerHTML = `
+                    <div class="win-screen">🎉 Congratulations, You Win! 🎉</div>
+                    <button class="restart-btn" onclick="restartGame()">Play Again</button>
+                `;
+                return true;
             }
+
+            return false;
         }
-        
+
+        function restartGame() {
+            lives = 3;
+            currentDifficulty = 1;
+            answeredQuestions.clear();
+            difficultyFiveCorrect = false;
+            document.getElementById('difficulty-level').textContent = currentDifficulty;
+            document.getElementById('lives').textContent = lives;
+            displayNextQuestion();
+        }
+
         loadQuizData();
     </script>
 </body>
