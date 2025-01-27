@@ -307,8 +307,11 @@
         function checkAnswer(index, correct) {
             const buttons = document.querySelectorAll('.choice-btn');
             const resultDiv = document.querySelector('.result');
+            const explanationDiv = document.querySelector('.explanation');
 
             buttons.forEach(btn => btn.disabled = true);
+
+            let delay = 2000;
 
             if (correct) {
                 buttons[index].classList.add('correct');
@@ -320,13 +323,16 @@
             } else {
                 buttons[index].classList.add('incorrect');
                 resultDiv.textContent = '❌ Incorrect';
+                delay = 5000;
                 lives--;
                 document.getElementById('lives').textContent = lives;
                 if (currentDifficulty > 1) currentDifficulty--;
-            }
+                explanationDiv.style.display = 'block';
 
+            }
+            
             document.getElementById('difficulty-level').textContent = currentDifficulty;
-            setTimeout(() => checkGameOverOrWin() || displayNextQuestion(), 2000);
+            setTimeout(() => checkGameOverOrWin() || displayNextQuestion(), delay);
         }
 
         function checkGameOverOrWin() {
